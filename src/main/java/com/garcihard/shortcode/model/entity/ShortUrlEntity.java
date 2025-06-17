@@ -8,8 +8,6 @@ import lombok.Setter;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.io.Serializable;
-import java.util.UUID;
-
 
 @EntityListeners(AuditingEntityListener.class)
 @Getter
@@ -21,11 +19,13 @@ import java.util.UUID;
 public class ShortUrlEntity extends BaseEntity implements Serializable {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    UUID id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    Long id;
 
+    @Column(nullable = false, columnDefinition = "TEXT")
     String longUrl;
 
+    @Column(unique = true)
     String shortCode;
 
 }

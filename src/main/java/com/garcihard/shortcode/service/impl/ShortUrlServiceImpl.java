@@ -5,16 +5,15 @@ import com.garcihard.shortcode.mapper.ShortUrlMapper;
 import com.garcihard.shortcode.model.dto.ShortUrlRequestDTO;
 import com.garcihard.shortcode.model.dto.ShortUrlResponseDTO;
 import com.garcihard.shortcode.model.entity.ShortUrlEntity;
-import com.garcihard.shortcode.repository.ShortUrlRespository;
+import com.garcihard.shortcode.repository.ShortUrlRepository;
 import com.garcihard.shortcode.service.ShortUrlService;
 import com.garcihard.shortcode.utils.ShortUrlEncoder;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.net.URI;
-import java.util.Optional;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -22,26 +21,31 @@ import java.util.Optional;
 public class ShortUrlServiceImpl implements ShortUrlService {
 
     private final ShortUrlMapper mapper;
-    private final ShortUrlRespository respository;
+    private final ShortUrlRepository shortUrlRespository;
 
     @Override
+    @Transactional // Aseguramos que suceda en UNA ÚNICA TRANSACCIÓN.
     public ShortUrlResponseDTO createShortUrl(ShortUrlRequestDTO request) {
-        final int urlToHash = Math.abs(request.longUrl().hashCode());
-        final String urlEncoded = ShortUrlEncoder.BASE_62.encodeUrl(urlToHash);
+        return shortUrlRespository.findByLongUrl(request.longUrl())
+                .map(mapper::toDto)
+                .orElseGet(() -> {
+                   ShortUrlEntity entity = new ShortUrlEntity();
+                   entity.setLongUrl(request.longUrl());
 
-        ShortUrlEntity entity = mapper.toEntity(
-                ShortUrlResponseDTO.of(request.longUrl(), urlEncoded)
-        );
+                   entity = shortUrlRespository.save(entity);
 
-        return  mapper.toDto(respository.save(entity));
+                   final String shortCode = ShortUrlEncoder.BASE_62.encodeUrl(entity.getId());
+                   entity.setShortCode(shortCode);
+
+                   return mapper.toDto(entity);
+                });
     }
 
     @Override
     public URI getRedirectionUrl(String shortUrl) {
 
-        ShortUrlEntity entity = Optional.ofNullable(
-                respository.getShortUrlEntityByShortCode(shortUrl)
-        ).orElseThrow(() -> new ShortUrlNotFoundException(shortUrl));
+        ShortUrlEntity entity = shortUrlRespository.findByShortCode(shortUrl)
+                .orElseThrow(() -> new ShortUrlNotFoundException(shortUrl));
 
         return URI.create(entity.getLongUrl());
     }
