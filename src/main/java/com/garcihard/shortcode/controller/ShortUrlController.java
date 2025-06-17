@@ -5,8 +5,11 @@ import com.garcihard.shortcode.model.dto.ShortUrlResponseDTO;
 import com.garcihard.shortcode.service.ShortUrlService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.net.URI;
 
 @RequiredArgsConstructor
 @RequestMapping(ShortUrlController.SHORT_URL_URI)
@@ -19,9 +22,18 @@ public class ShortUrlController {
 
     @PostMapping
     public ResponseEntity<ShortUrlResponseDTO> createShorUri(@RequestBody @Valid
-                                               ShortUrlRequestDTO requestDto) {
-        shortUrlService.createShortUrl(requestDto);
+                                               final ShortUrlRequestDTO requestDto) {
+        final ShortUrlResponseDTO response = shortUrlService.createShortUrl(requestDto);
 
-        return ResponseEntity.ok().build();
+        return new ResponseEntity<>(response, HttpStatus.CREATED);
+    }
+
+    @GetMapping("/{shortCode}")
+    public ResponseEntity<Void> redirectToUrl(@PathVariable String shortCode) {
+        final URI redirectionUrl = shortUrlService.getRedirectionUrl(shortCode);
+
+        return ResponseEntity.status(HttpStatus.MOVED_PERMANENTLY)
+                .location(redirectionUrl)
+                .build();
     }
 }

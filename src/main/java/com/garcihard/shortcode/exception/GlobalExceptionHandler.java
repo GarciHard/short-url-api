@@ -13,9 +13,9 @@ import java.util.UUID;
 @Slf4j
 @ControllerAdvice
 public class GlobalExceptionHandler {
-/**
+
     @ExceptionHandler(RuntimeException.class)
-    public ResponseEntity<ErrorResponse> handleUncaughtExceptions(RuntimeException ex) {
+    public ResponseEntity<ErrorResponse> handleUncaughtExceptions(Exception ex) {
 
         final String errorId = UUID.randomUUID().toString();
         log.error("Unexpected System Error! Error ID: {}", errorId, ex);
@@ -26,5 +26,5 @@ public class GlobalExceptionHandler {
 
         return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
     }
-**/
+
 }

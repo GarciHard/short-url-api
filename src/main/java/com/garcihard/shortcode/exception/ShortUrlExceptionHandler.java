@@ -13,6 +13,8 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 
 import java.util.List;
 
+import static net.logstash.logback.argument.StructuredArguments.kv;
+
 @Slf4j
 @ControllerAdvice
 public class ShortUrlExceptionHandler {
@@ -29,7 +31,9 @@ public class ShortUrlExceptionHandler {
                 ShortUrlConstants.VALIDATION_FAILED_MSG,
                 fieldErrors);
 
-        log.warn(ShortUrlConstants.VALIDATION_FAILED_MSG, fieldErrors);
+        log.warn(ShortUrlConstants.VALIDATION_FAILED_MSG,
+                kv("details", fieldErrors)
+        );
 
         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
     }

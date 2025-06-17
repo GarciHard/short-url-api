@@ -3,9 +3,11 @@ package com.garcihard.shortcode.service;
 import com.garcihard.shortcode.model.dto.ShortUrlRequestDTO;
 import com.garcihard.shortcode.model.dto.ShortUrlResponseDTO;
 
+import java.net.URI;
+
 public interface ShortUrlService {
 
-    ShortUrlResponseDTO createShortUrl(ShortUrlRequestDTO dto);
+    ShortUrlResponseDTO createShortUrl(ShortUrlRequestDTO request);
 
-    void redirectToURl(String url);
+    URI getRedirectionUrl(String shortUrl);
 }
